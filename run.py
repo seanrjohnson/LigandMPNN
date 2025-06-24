@@ -118,7 +118,11 @@ def main(args) -> None:
             device=device,
             num_mix=3,
         )
-
+        # If the checkpoint isn't in the local directory, try to load it relative to the script directory.
+        if not os.path.exists(checkpoint_path_sc):
+            alt_path = os.path.join( os.path.dirname(os.path.abspath(__file__)), checkpoint_path_sc )
+            if os.path.exists(alt_path):
+                checkpoint_path_sc = alt_path
         checkpoint_sc = torch.load(args.checkpoint_path_sc, map_location=device)
         model_sc.load_state_dict(checkpoint_sc["model_state_dict"])
         model_sc.to(device)
