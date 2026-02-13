@@ -1,11 +1,69 @@
 from __future__ import print_function
 
+import sys
 import numpy as np
 import torch
 import torch.utils
 from prody import *
 
 confProDy(verbosity="none")
+
+
+def get_device(device_str=None, verbose=True):
+    """
+    Get the device for inference.
+    
+    Args:
+        device_str: Optional device string (e.g., 'cpu', 'cuda', 'cuda:0')
+        verbose: Whether to print device information
+        
+    Returns:
+        torch.device object
+        
+    Raises:
+        SystemExit: If requested device is not available
+    """
+    if device_str:
+        # User specified a device
+        requested_device = device_str
+        
+        # Validate the device string
+        if requested_device.startswith("cuda"):
+            if not torch.cuda.is_available():
+                print(f"Error: CUDA device '{requested_device}' requested but CUDA is not available.")
+                sys.exit(1)
+            # Check if specific GPU index is requested
+            if ":" in requested_device:
+                try:
+                    device_idx = int(requested_device.split(":")[1])
+                    if device_idx >= torch.cuda.device_count():
+                        print(f"Error: CUDA device '{requested_device}' requested but only {torch.cuda.device_count()} CUDA device(s) available.")
+                        sys.exit(1)
+                except ValueError:
+                    print(f"Error: Invalid CUDA device specification '{requested_device}'.")
+                    sys.exit(1)
+        
+        # Try to create the device and catch any errors
+        try:
+            device = torch.device(requested_device)
+        except Exception as e:
+            print(f"Error: Invalid device specification '{requested_device}': {e}")
+            sys.exit(1)
+            
+        if verbose:
+            print(f"Using device: {device}")
+    else:
+        # No device specified, try GPU first, fall back to CPU
+        if torch.cuda.is_available():
+            device = torch.device("cuda")
+            if verbose:
+                print(f"Using device: {device}")
+        else:
+            device = torch.device("cpu")
+            if verbose:
+                print(f"Using device: {device}")
+    
+    return device
 
 restype_1to3 = {
     "A": "ALA",

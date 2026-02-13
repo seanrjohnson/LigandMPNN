@@ -11,6 +11,7 @@ from data_utils import (
     alphabet,
     element_dict_rev,
     featurize,
+    get_device,
     get_score,
     get_seq_rec,
     parse_PDB,
@@ -37,36 +38,7 @@ def main(args) -> None:
     np.random.seed(seed)
     
     # Device selection logic
-    if args.device:
-        # User specified a device
-        requested_device = args.device
-        if requested_device.startswith("cuda"):
-            if not torch.cuda.is_available():
-                print(f"Error: CUDA device '{requested_device}' requested but CUDA is not available.")
-                sys.exit(1)
-            # Check if specific GPU index is requested
-            if ":" in requested_device:
-                try:
-                    device_idx = int(requested_device.split(":")[1])
-                    if device_idx >= torch.cuda.device_count():
-                        print(f"Error: CUDA device '{requested_device}' requested but only {torch.cuda.device_count()} CUDA device(s) available.")
-                        sys.exit(1)
-                except ValueError:
-                    print(f"Error: Invalid CUDA device specification '{requested_device}'.")
-                    sys.exit(1)
-        device = torch.device(requested_device)
-        if args.verbose:
-            print(f"Using device: {device}")
-    else:
-        # No device specified, try GPU first, fall back to CPU
-        if torch.cuda.is_available():
-            device = torch.device("cuda")
-            if args.verbose:
-                print(f"Using device: {device}")
-        else:
-            device = torch.device("cpu")
-            if args.verbose:
-                print(f"Using device: {device}")
+    device = get_device(args.device, verbose=args.verbose)
     folder_for_outputs = args.out_folder
     base_folder = folder_for_outputs
     if base_folder[-1] != "/":
