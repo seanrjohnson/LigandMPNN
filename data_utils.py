@@ -9,12 +9,13 @@ from prody import *
 confProDy(verbosity="none")
 
 
-def get_device(device_str=None, verbose=True):
+def get_device(device_str="", verbose=True):
     """
     Get the device for inference.
     
     Args:
-        device_str: Optional device string (e.g., 'cpu', 'cuda', 'cuda:0')
+        device_str: Optional device string (e.g., 'cpu', 'cuda', 'cuda:0').
+                    Empty string means auto-detect (GPU if available, else CPU).
         verbose: Whether to print device information
         
     Returns:
