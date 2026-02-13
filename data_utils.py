@@ -26,31 +26,33 @@ def get_device(device_str="", verbose=True):
     """
     if device_str:
         # User specified a device
-        requested_device = device_str
-        
         # Validate the device string
-        if requested_device.startswith("cuda"):
+        if device_str.startswith("cuda"):
             if not torch.cuda.is_available():
-                print(f"Error: CUDA device '{requested_device}' requested but CUDA is not available.")
+                print(f"Error: CUDA device '{device_str}' requested but CUDA is not available.")
                 print("Please ensure PyTorch was built with CUDA support and CUDA drivers are installed.")
                 sys.exit(1)
             # Check if specific GPU index is requested
-            if ":" in requested_device:
+            if ":" in device_str:
                 try:
-                    device_idx = int(requested_device.split(":")[1])
+                    device_idx = int(device_str.split(":")[1])
                     device_count = torch.cuda.device_count()
                     if device_idx >= device_count:
-                        print(f"Error: CUDA device '{requested_device}' requested but only {device_count} CUDA device(s) available (valid indices: 0-{device_count-1}).")
+                        if device_count == 1:
+                            valid_range = "0"
+                        else:
+                            valid_range = f"0 to {device_count-1}"
+                        print(f"Error: CUDA device '{device_str}' requested but only {device_count} CUDA device(s) available (valid indices: {valid_range}).")
                         sys.exit(1)
                 except ValueError:
-                    print(f"Error: Invalid CUDA device specification '{requested_device}'.")
+                    print(f"Error: Invalid CUDA device specification '{device_str}'.")
                     sys.exit(1)
         
         # Try to create the device and catch any errors
         try:
-            device = torch.device(requested_device)
+            device = torch.device(device_str)
         except Exception as e:
-            print(f"Error: Invalid device specification '{requested_device}': {e}")
+            print(f"Error: Invalid device specification '{device_str}': {e}")
             sys.exit(1)
             
         if verbose:
