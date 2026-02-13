@@ -32,13 +32,15 @@ def get_device(device_str="", verbose=True):
         if requested_device.startswith("cuda"):
             if not torch.cuda.is_available():
                 print(f"Error: CUDA device '{requested_device}' requested but CUDA is not available.")
+                print("Please ensure PyTorch was built with CUDA support and CUDA drivers are installed.")
                 sys.exit(1)
             # Check if specific GPU index is requested
             if ":" in requested_device:
                 try:
                     device_idx = int(requested_device.split(":")[1])
-                    if device_idx >= torch.cuda.device_count():
-                        print(f"Error: CUDA device '{requested_device}' requested but only {torch.cuda.device_count()} CUDA device(s) available.")
+                    device_count = torch.cuda.device_count()
+                    if device_idx >= device_count:
+                        print(f"Error: CUDA device '{requested_device}' requested but only {device_count} CUDA device(s) available (valid indices: 0-{device_count-1}).")
                         sys.exit(1)
                 except ValueError:
                     print(f"Error: Invalid CUDA device specification '{requested_device}'.")
