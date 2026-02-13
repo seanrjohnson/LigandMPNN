@@ -13,6 +13,7 @@ from data_utils import (
     restype_int_to_str,
     featurize,
     parse_PDB,
+    get_device,
 )
 from model_utils import ProteinMPNN
 
@@ -28,7 +29,9 @@ def main(args) -> None:
     torch.manual_seed(seed)
     random.seed(seed)
     np.random.seed(seed)
-    device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
+    
+    # Device selection logic
+    device = get_device(args.device, verbose=args.verbose)
     folder_for_outputs = args.out_folder
     base_folder = folder_for_outputs
     if base_folder[-1] != "/":
@@ -385,6 +388,13 @@ if __name__ == "__main__":
     )
 
     argparser.add_argument("--verbose", type=int, default=1, help="Print stuff")
+    
+    argparser.add_argument(
+        "--device",
+        type=str,
+        default="",
+        help="Device to use for inference (e.g., 'cpu', 'cuda', 'cuda:0'). If not specified, will use GPU if available, otherwise CPU.",
+    )
 
     argparser.add_argument(
         "--pdb_path", type=str, default="", help="Path to the input PDB."
